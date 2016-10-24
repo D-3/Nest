@@ -11,8 +11,9 @@ import java.util.List;
 public class ListUtils {
 
   /**
-   * Converts a list of wrappers to an array of primitives. Any unspecified element will be
-   * ignored.
+   * Converts a list of wrappers to an array of primitives.
+   * <p>
+   * Any unspecified element will be ignored.
    *
    * @param wrappers a Byte list, may be {@code null}
    * @return a byte array, {@link ArrayUtils#EMPTY_BYTE_ARRAY} if null or empty list input

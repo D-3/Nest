@@ -9,8 +9,9 @@ import ml.that.pigeon.util.ArrayUtils;
 import ml.that.pigeon.util.LogUtils;
 
 /**
- * Base class for JT/T808 messages. Every message has a unique ID. Optionally, the "cipher",
- * "phone", and "body" fields can be set.
+ * Base class for JT/T808 messages.
+ * <p>
+ * Every message has a unique ID. Optionally, the "cipher", "phone", and "body" fields can be set.
  *
  * @author ThatMrL (thatmr.l@gmail.com)
  */

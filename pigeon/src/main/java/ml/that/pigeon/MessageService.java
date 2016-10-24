@@ -15,8 +15,9 @@ import ml.that.pigeon.util.IntentUtils;
 import ml.that.pigeon.util.LogUtils;
 
 /**
- * Service that continues to run in background and send and receive messages from the server. This
- * should be registered as service in AndroidManifest.xml.
+ * Service that continues to run in background and send and receive messages from the server.
+ * <p>
+ * This should be registered as service in AndroidManifest.xml.
  *
  * @author ThatMrL (thatmr.l@gmail.com)
  */
