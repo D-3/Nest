@@ -11,7 +11,7 @@ import java.util.List;
  * This class tries to handle {@code null} input gracefully. An exception will not be thrown for a
  * {@code null}  array input. Each method documents its behavior.
  *
- * @author ThatMrL (thatmr.l@gmail.com)
+ * @author That Mr.L (thatmr.l@gmail.com)
  */
 public class ArrayUtils {
 

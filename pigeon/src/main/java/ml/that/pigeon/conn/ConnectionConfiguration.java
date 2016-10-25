@@ -3,7 +3,7 @@ package ml.that.pigeon.conn;
 /**
  * Configuration to use while establishing the connection to the server.
  *
- * @author ThatMrL (thatmr.l@gmail.com)
+ * @author That Mr.L (thatmr.l@gmail.com)
  */
 public class ConnectionConfiguration {
 

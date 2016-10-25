@@ -1,7 +1,10 @@
 package ml.that.pigeon.conn;
 
+import java.io.IOException;
 import java.io.InputStream;
 
+import ml.that.pigeon.msg.Message;
+import ml.that.pigeon.msg.Packet;
 import ml.that.pigeon.util.LogUtils;
 
 /**
@@ -9,7 +12,7 @@ import ml.that.pigeon.util.LogUtils;
  * <p>
  * The message reader also invokes all message listeners and collectors.
  *
- * @author ThatMrL (thatmr.l@gmail.com)
+ * @author That Mr.L (thatmr.l@gmail.com)
  */
 class MessageReader {
 
@@ -46,24 +49,55 @@ class MessageReader {
   }
 
   /**
-   * Starts the packet read thread and returns once a connection to the server has been established.
-   * A connection will be attempted for a maximum of five seconds. An Jtt808Exception will be thrown
-   * if the connection fails.
+   * Starts the packet read thread.
    */
-  public void startup() {
+  public synchronized void startup() {
     mThread.start();
-    // TODO: 10/24/2016 complete this method
   }
 
   /**
    * Shuts the message reader down.
    */
   public void shutdown() {
+    mDone = true;
+  }
+
+  /**
+   * Parses packets in order to process them further.
+   */
+  private void readPackets() {
+    try {
+      byte[] buf = new byte[128];
+      int len;
+      while (!mDone && (len = mInput.read(buf)) != -1) {
+        if (len > 0) {
+          byte[] raw = new byte[len];
+          System.arraycopy(buf, 0, raw, 0, len);
+          Packet packet = new Packet(raw);
+          Message message = new Message.Builder(packet).build();
+        }
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     // TODO: 10/24/2016 implement this method
   }
 
-  private void readPackets() {
-    // TODO: 10/24/2016 implement this method
+  /**
+   * Processes a message after it's been fully parsed by looping through the installed message
+   * collectors and listeners and letting them examine the message to see if they are a match with
+   * the filter.
+   *
+   * @param msg the message to process
+   */
+  private void processMessage(Message msg) {
+    if (msg == null) {
+      return;
+    }
+    // Loop through all collectors and notify the appropriate ones.
+    for (MessageCollector collector : mConnection.getCollectors()) {
+      collector.processMessage(msg);
+    }
   }
 
   private class ReadThread extends Thread {

@@ -2,6 +2,8 @@ package ml.that.pigeon.msg;
 
 import android.util.Log;
 
+import java.util.Arrays;
+
 import ml.that.pigeon.util.ArrayUtils;
 import ml.that.pigeon.util.IntegerUtils;
 import ml.that.pigeon.util.LogUtils;
@@ -9,7 +11,7 @@ import ml.that.pigeon.util.LogUtils;
 /**
  * Represents JT/T808 message packets.
  *
- * @author ThatMrL (thatmr.l@gmail.com)
+ * @author That Mr.L (thatmr.l@gmail.com)
  */
 public class Packet {
 
@@ -66,6 +68,42 @@ public class Packet {
     mSn = sn;
     mTotal = (short) (isLong ? total : 0);
     mIndex = (short) (isLong ? index : 0);
+  }
+
+  // TODO: 2016/10/25 replace with packet pull parser
+  @Deprecated
+  public Packet(byte[] raw) {
+    if (raw[0] != PREFIX || raw[raw.length - 1] != SUFFIX) {
+      throw new IllegalArgumentException("Packet prefix or suffix not found.");
+    }
+
+    byte[] main = ArrayUtils.unescape(Arrays.copyOfRange(raw, 1, raw.length - 1));
+    if (main.length < 13) {
+      throw new IllegalArgumentException("Insufficient packet length.");
+    }
+
+    mCipher = (byte) (main[2] & 0x1c);
+    if (mCipher != Message.CIPHER_NONE && mCipher != Message.CIPHER_RSA) {
+      throw new IllegalArgumentException("Unknown cipher mode.");
+    }
+
+    mIsLongMsg = (main[2] & 0x20) == 0x20;
+    int len = (IntegerUtils.parseInt(Arrays.copyOfRange(main, 2, 4)) & MAX_LENGTH);
+    if ((isLongMsg() && len != main.length - 17) || (!isLongMsg() && len != main.length - 13)) {
+      throw new IllegalArgumentException("Incorrect packet length.");
+    }
+
+    byte checksum = main[main.length - 1];
+    if (checksum != ArrayUtils.xorCheck(Arrays.copyOfRange(main, 0, main.length - 1))) {
+      throw new IllegalArgumentException("XOR check failed.");
+    }
+
+    mMsgId = IntegerUtils.parseShort(Arrays.copyOfRange(main, 0, 2));
+    mPhone = Arrays.copyOfRange(main, 4, 10);
+    mSn = IntegerUtils.parseShort(Arrays.copyOfRange(main, 10, 12));
+    mTotal = isLongMsg() ? IntegerUtils.parseShort(Arrays.copyOfRange(main, 12, 14)) : 0;
+    mIndex = isLongMsg() ? IntegerUtils.parseShort(Arrays.copyOfRange(main, 14, 16)) : 0;
+    mPayload = Arrays.copyOfRange(main, main.length - 1 - len, main.length - 1);
   }
 
   public byte[] getBytes() {

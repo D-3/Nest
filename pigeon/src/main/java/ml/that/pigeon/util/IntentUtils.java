@@ -3,7 +3,7 @@ package ml.that.pigeon.util;
 /**
  * Utility class for intent.
  *
- * @author ThatMrL (thatmr.l@gmail.com)
+ * @author That Mr.L (thatmr.l@gmail.com)
  */
 public class IntentUtils {
 

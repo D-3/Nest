@@ -12,12 +12,13 @@ import ml.that.pigeon.MessageService.TaskSubmitter;
 import ml.that.pigeon.MessageService.TaskTracker;
 import ml.that.pigeon.conn.Connection;
 import ml.that.pigeon.conn.ConnectionConfiguration;
+import ml.that.pigeon.msg.Message;
 import ml.that.pigeon.util.LogUtils;
 
 /**
  * This class is to manage the JT/T808 connection between client and server.
  *
- * @author ThatMrL (thatmr.l@gmail.com)
+ * @author That Mr.L (thatmr.l@gmail.com)
  */
 public class ConnectionManager {
 
@@ -137,6 +138,14 @@ public class ConnectionManager {
     @Override
     public void run() {
       Log.i(TAG, "run: Registering...");
+
+      if (!isRegistered()) {
+        // TODO: 2016/10/25 add message listener to the connection
+        // TODO: 2016/10/25 replace with register request
+        Message msg = new Message.Builder((short) 1).build();
+        mConnection.sendMessage(msg);
+      }
+      // TODO: 2016/10/25 add message collector
       // TODO: 10/23/2016 implement this method
     }
 

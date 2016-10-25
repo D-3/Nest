@@ -16,7 +16,7 @@ import ml.that.pigeon.util.LogUtils;
  * modify message before they're actually sent. Message listeners can be registered to listen for
  * all outgoing messages.
  *
- * @author ThatMrL (thatmr.l@gmail.com)
+ * @author That Mr.L (thatmr.l@gmail.com)
  */
 class MessageWriter {
 

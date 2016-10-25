@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Collection;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
+import ml.that.pigeon.filter.MessageFilter;
 import ml.that.pigeon.msg.Message;
 import ml.that.pigeon.util.LogUtils;
 
@@ -40,7 +43,7 @@ import ml.that.pigeon.util.LogUtils;
  * reconnect again. To stop the reconnection process, use {@link #disconnect()}. Once stopped you
  * can use {@link #connect()} to manually connect to the server.
  *
- * @author ThatMrL (thatmr.l@gmail.com)
+ * @author That Mr.L (thatmr.l@gmail.com)
  */
 public class Connection {
 
@@ -60,6 +63,10 @@ public class Connection {
 
   // mSocketClosed is used concurrent by Connection, MessageReader, MessageWriter
   private volatile boolean mSocketClosed = false;
+
+  // A collection of MessageCollectors which collects messages for a specified filter and perform
+  // blocking and polling operations on the result queue.
+  private Collection<MessageCollector> mCollectors = new ConcurrentLinkedQueue<>();
 
   /**
    * Creates a new JT/T808 connection using the specified connection configuration.
@@ -132,6 +139,39 @@ public class Connection {
 
   public boolean isSocketClosed() {
     return mSocketClosed;
+  }
+
+  /**
+   * Creates a new message collector for this connection. A message filter determines which messages
+   * will be accumulated by the collector. A MessageCollector is more suitable to use than a {@link
+   * MessageListener} when you need to wait for a specific result.
+   *
+   * @param filter the message filter to use
+   * @return a new message collector
+   */
+  public MessageCollector createMessageCollector(MessageFilter filter) {
+    MessageCollector collector = new MessageCollector(this, filter);
+    // Add the collector to the list of active collectors
+    mCollectors.add(collector);
+    return collector;
+  }
+
+  /**
+   * Removes a message collector of this connection.
+   *
+   * @param collector a message collector which was created for this connection
+   */
+  void removeMessageCollector(MessageCollector collector) {
+    mCollectors.remove(collector);
+  }
+
+  /**
+   * Get the collection of all message collectors for this connection.
+   *
+   * @return a collection of message collectors for this connection
+   */
+  public Collection<MessageCollector> getCollectors() {
+    return mCollectors;
   }
 
   /**

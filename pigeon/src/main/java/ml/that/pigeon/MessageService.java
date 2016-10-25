@@ -19,7 +19,7 @@ import ml.that.pigeon.util.LogUtils;
  * <p>
  * This should be registered as service in AndroidManifest.xml.
  *
- * @author ThatMrL (thatmr.l@gmail.com)
+ * @author That Mr.L (thatmr.l@gmail.com)
  */
 public class MessageService extends Service {
 

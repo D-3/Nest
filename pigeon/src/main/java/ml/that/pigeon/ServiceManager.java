@@ -7,7 +7,7 @@ import ml.that.pigeon.util.LogUtils;
 /**
  * This class is to manage the message service and to load the configuration.
  *
- * @author ThatMrL (thatmr.l@gmail.com)
+ * @author That Mr.L (thatmr.l@gmail.com)
  */
 public class ServiceManager {
 

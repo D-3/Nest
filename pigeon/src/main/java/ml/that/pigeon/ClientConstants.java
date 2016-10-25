@@ -3,7 +3,7 @@ package ml.that.pigeon;
 /**
  * Static constants for this module.
  *
- * @author ThatMrL (thatmr.l@gmail.com)
+ * @author That Mr.L (thatmr.l@gmail.com)
  */
 public class ClientConstants {
 

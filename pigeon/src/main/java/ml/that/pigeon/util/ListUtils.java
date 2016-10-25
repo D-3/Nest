@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * A collection of utility methods for List objects.
  *
- * @author ThatMrL (thatmr.l@gmail.com)
+ * @author That Mr.L (thatmr.l@gmail.com)
  */
 public class ListUtils {
 

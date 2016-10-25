@@ -10,7 +10,7 @@ import static org.junit.Assert.assertArrayEquals;
 /**
  * Local unit test for {@link IntegerUtils}, will execute on the development machine (host).
  *
- * @author ThatMrL (thatmr.l@gmail.com)
+ * @author That Mr.L (thatmr.l@gmail.com)
  * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
  */
 public class IntegerUtilsTest {

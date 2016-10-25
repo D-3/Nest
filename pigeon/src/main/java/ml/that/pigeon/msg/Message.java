@@ -13,7 +13,7 @@ import ml.that.pigeon.util.LogUtils;
  * <p>
  * Every message has a unique ID. Optionally, the "cipher", "phone", and "body" fields can be set.
  *
- * @author ThatMrL (thatmr.l@gmail.com)
+ * @author That Mr.L (thatmr.l@gmail.com)
  */
 public class Message {// TODO: 10/23/2016 make this class abstract
 
