@@ -19,8 +19,8 @@ public class Packet {
 
   static final short MAX_LENGTH = 0x03ff;
 
-  private static final short PREFIX = 0x7e;
-  private static final short SUFFIX = 0x7e;
+  private static final byte PREFIX = 0x7e;
+  private static final byte SUFFIX = 0x7e;
 
   private final short   mMsgId;
   private final boolean mIsLongMsg;
@@ -112,7 +112,7 @@ public class Packet {
     byte[] header = ArrayUtils.concatenate(IntegerUtils.asBytes(mMsgId),
                                            IntegerUtils.asBytes(attr),
                                            mPhone,
-                                           IntegerUtils.asBytes(PacketManager.getSn()));
+                                           IntegerUtils.asBytes(mSn));
     if (mIsLongMsg) {
       header = ArrayUtils.concatenate(header,
                                       IntegerUtils.asBytes(mTotal),
