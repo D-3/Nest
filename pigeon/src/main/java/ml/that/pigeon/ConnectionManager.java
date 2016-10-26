@@ -12,6 +12,7 @@ import ml.that.pigeon.MessageService.TaskSubmitter;
 import ml.that.pigeon.MessageService.TaskTracker;
 import ml.that.pigeon.conn.Connection;
 import ml.that.pigeon.conn.ConnectionConfiguration;
+import ml.that.pigeon.conn.MessageListener;
 import ml.that.pigeon.msg.Message;
 import ml.that.pigeon.util.LogUtils;
 
@@ -141,12 +142,11 @@ public class ConnectionManager {
 
       if (!isRegistered()) {
         // TODO: 2016/10/25 add message listener to the connection
+        mConnection.addRcvListener(new RegisterListener(), null);
         // TODO: 2016/10/25 replace with register request
-        Message msg = new Message.Builder((short) 1).build();
+        Message msg = new Message.Builder((short) 2).build();
         mConnection.sendMessage(msg);
       }
-      // TODO: 2016/10/25 add message collector
-      // TODO: 10/23/2016 implement this method
     }
 
   }
@@ -158,6 +158,15 @@ public class ConnectionManager {
     public void run() {
       Log.i(TAG, "run: Logging in...");
       // TODO: 10/23/2016 implement this method
+    }
+
+  }
+
+  private class RegisterListener implements MessageListener {
+
+    @Override
+    public void processMessage(Message msg) {
+      Log.d(TAG, "processMessage: msg=" + msg);
     }
 
   }

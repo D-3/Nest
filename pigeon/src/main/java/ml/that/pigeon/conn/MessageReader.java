@@ -2,7 +2,10 @@ package ml.that.pigeon.conn;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import ml.that.pigeon.conn.Connection.ListenerWrapper;
 import ml.that.pigeon.msg.Message;
 import ml.that.pigeon.msg.Packet;
 import ml.that.pigeon.util.LogUtils;
@@ -18,9 +21,10 @@ class MessageReader {
 
   private static final String TAG = LogUtils.makeTag(MessageReader.class);
 
-  private Connection  mConnection;
-  private InputStream mInput;
-  private Thread      mThread;
+  private Connection      mConnection;
+  private InputStream     mInput;
+  private Thread          mThread;
+  private ExecutorService mExecutor;
 
   private boolean mDone;
 
@@ -46,6 +50,10 @@ class MessageReader {
     // TODO: 10/24/2016 add connection count to the name
     mThread.setName("Pigeon Message Reader ( )");
     mThread.setDaemon(true);
+
+    // Create an executor to deliver incoming messages to listeners. We'll use a single thread with
+    // an unbounded queue
+    mExecutor = Executors.newSingleThreadExecutor();
   }
 
   /**
@@ -74,7 +82,8 @@ class MessageReader {
           byte[] raw = new byte[len];
           System.arraycopy(buf, 0, raw, 0, len);
           Packet packet = new Packet(raw);
-          Message message = new Message.Builder(packet).build();
+          Message msg = new Message.Builder(packet).build();
+          processMessage(msg);
         }
       }
     } catch (IOException e) {
@@ -94,18 +103,45 @@ class MessageReader {
     if (msg == null) {
       return;
     }
+
     // Loop through all collectors and notify the appropriate ones.
     for (MessageCollector collector : mConnection.getCollectors()) {
       collector.processMessage(msg);
     }
+
+    // Deliver the incoming message to listeners
+    mExecutor.submit(new ListenerNotification(msg));
   }
 
+  /**
+   * A thread to read packets from the connection.
+   */
   private class ReadThread extends Thread {
 
     @Override
     public void run() {
       super.run();
       readPackets();
+    }
+
+  }
+
+  /**
+   * A runnable to notify all listeners of a message.
+   */
+  private class ListenerNotification implements Runnable {
+
+    private Message message;
+
+    public ListenerNotification(Message msg) {
+      this.message = msg;
+    }
+
+    @Override
+    public void run() {
+      for (ListenerWrapper wrapper : mConnection.getRcvListeners().values()) {
+        wrapper.notifyListener(this.message);
+      }
     }
 
   }

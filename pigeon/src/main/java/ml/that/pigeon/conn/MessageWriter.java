@@ -48,7 +48,7 @@ class MessageWriter {
   void init() {
     mDone = false;
     mOutput = mConnection.getOutput();
-    
+
     mThread = new WriteThread();
     // TODO: 10/24/2016 add connection count to the name
     mThread.setName("Pigeon Message Writer ( )");
@@ -127,6 +127,11 @@ class MessageWriter {
     }
   }
 
+  /**
+   * Returns the next available packet from the queue for writing.
+   *
+   * @return the next available for writing
+   */
   private Packet nextPacket() {
     Packet packet = null;
 

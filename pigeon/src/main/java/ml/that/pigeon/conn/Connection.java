@@ -5,6 +5,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import ml.that.pigeon.filter.MessageFilter;
@@ -66,7 +68,11 @@ public class Connection {
 
   // A collection of MessageCollectors which collects messages for a specified filter and perform
   // blocking and polling operations on the result queue.
-  private Collection<MessageCollector> mCollectors = new ConcurrentLinkedQueue<>();
+  private final Collection<MessageCollector>          mCollectors   = new ConcurrentLinkedQueue<>();
+  // List of MessageListeners that will be notified when a new message was received
+  private final Map<MessageListener, ListenerWrapper> mRcvListeners = new ConcurrentHashMap<>();
+  // List of MessageListeners that will be notified when a new messgae was sent
+  private final Map<MessageListener, ListenerWrapper> mSndListeners = new ConcurrentHashMap<>();
 
   /**
    * Creates a new JT/T808 connection using the specified connection configuration.
@@ -175,6 +181,78 @@ public class Connection {
   }
 
   /**
+   * Registers a message listener with this connection. A message filter determines which messages
+   * will be delivered to the listener. If the same message listener is added again with a different
+   * filter, only the new filter will be used.
+   *
+   * @param listener the message listener to notify of new received messages
+   * @param filter   the message filter to use
+   */
+  public void addRcvListener(MessageListener listener, MessageFilter filter) {
+    if (listener == null) {
+      throw new NullPointerException("Message listener is null.");
+    }
+
+    ListenerWrapper wrapper = new ListenerWrapper(listener, filter);
+    mRcvListeners.put(listener, wrapper);
+  }
+
+  /**
+   * Removes a message listener for received messages from this connection.
+   *
+   * @param listener the message listener to remove
+   */
+  public void removeRcvListener(MessageListener listener) {
+    mRcvListeners.remove(listener);
+  }
+
+  /**
+   * Get a map of all message listeners for received messages of this connection.
+   *
+   * @return a map of all message listeners for received messages
+   */
+  Map<MessageListener, ListenerWrapper> getRcvListeners() {
+    return mRcvListeners;
+  }
+
+  /**
+   * Registers a message listener with this connection. The listener will be notified of every
+   * message that this connection sends. A message filter determines which messages will be
+   * delivered to the listener. Note that the thread that writes messages will be used to invoke the
+   * listeners. Therefore, each message listener should complete all operations quickly or use a
+   * different thread for processing.
+   *
+   * @param listener the message listener to notify of sent messages
+   * @param filter   the message filter to use
+   */
+  public void addSndListener(MessageListener listener, MessageFilter filter) {
+    if (listener == null) {
+      throw new NullPointerException("Message listener is null.");
+    }
+
+    ListenerWrapper wrapper = new ListenerWrapper(listener, filter);
+    mSndListeners.put(listener, wrapper);
+  }
+
+  /**
+   * Removes a message listener for sending message from this connection.
+   *
+   * @param listener the message listener to remove
+   */
+  public void removeSndListener(MessageListener listener) {
+    mSndListeners.remove(listener);
+  }
+
+  /**
+   * Get a map of all message listeners for sending messages of this connection.
+   *
+   * @return a map of all message listeners for sent messages
+   */
+  Map<MessageListener, ListenerWrapper> getSndListeners() {
+    return mSndListeners;
+  }
+
+  /**
    * Initializes the connection by creating a message reader and writer.
    */
   private void initConnection() throws IOException {
@@ -240,6 +318,38 @@ public class Connection {
 
     // Make note of the fact that we're now connected
     mConnected = true;
+  }
+
+  /**
+   * A wrapper class to associate a message filter with a listener.
+   */
+  static class ListenerWrapper {
+
+    private MessageListener listener;
+    private MessageFilter   filter;
+
+    /**
+     * Creates a class which associates a message filter with a listener.
+     *
+     * @param listener the message listener
+     * @param filter   the associated filter or {@code null} if it listen for all messages
+     */
+    public ListenerWrapper(MessageListener listener, MessageFilter filter) {
+      this.listener = listener;
+      this.filter = filter;
+    }
+
+    /**
+     * Notify and process the message listener if the filter matches the message.
+     *
+     * @param msg the message which was sent or received
+     */
+    public void notifyListener(Message msg) {
+      if (this.filter == null || this.filter.accept(msg)) {
+        listener.processMessage(msg);
+      }
+    }
+
   }
 
 }
