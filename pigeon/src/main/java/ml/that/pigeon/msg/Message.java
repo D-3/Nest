@@ -2,6 +2,7 @@ package ml.that.pigeon.msg;
 
 import android.util.Log;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class Message {// TODO: 10/23/2016 make this class abstract
   private final byte[]  mPhone;
   private final byte[]  mBody;
 
-  private Message(short id, byte cipher, byte[] phone, byte[] body) {
+  protected Message(short id, byte cipher, byte[] phone, byte[] body) {
     mId = id;
 
     switch (cipher) {
@@ -110,6 +111,17 @@ public class Message {// TODO: 10/23/2016 make this class abstract
 
   public byte[] getBody() {
     return mBody;
+  }
+
+  @Override
+  public String toString() {
+    return new StringBuilder("{ ")
+        .append("id=").append(mId)
+        .append(", lng=").append(mIsLong)
+        .append(", cph=").append(mCipher)
+        .append(", phn=").append(Arrays.toString(mPhone))
+        .append(", bdy=").append(Arrays.toString(mBody))
+        .append(" }").toString();
   }
 
   public static class Builder {

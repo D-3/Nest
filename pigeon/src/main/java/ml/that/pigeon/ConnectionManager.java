@@ -13,7 +13,10 @@ import ml.that.pigeon.MessageService.TaskTracker;
 import ml.that.pigeon.conn.Connection;
 import ml.that.pigeon.conn.ConnectionConfiguration;
 import ml.that.pigeon.conn.MessageListener;
+import ml.that.pigeon.filter.MessageIdFilter;
 import ml.that.pigeon.msg.Message;
+import ml.that.pigeon.msg.RegisterReply;
+import ml.that.pigeon.msg.RegisterRequest;
 import ml.that.pigeon.util.LogUtils;
 
 /**
@@ -61,7 +64,7 @@ public class ConnectionManager {
   }
 
   private boolean isRegistered() {
-    return mPrefs.contains(ClientConstants.PREF_KEY_AUTH);
+    return mPrefs.contains(ClientConstants.PREF_KEY_AUTH_CODE);
   }
 
   private void addTask(Runnable task) {
@@ -141,11 +144,9 @@ public class ConnectionManager {
       Log.i(TAG, "run: Registering...");
 
       if (!isRegistered()) {
-        // TODO: 2016/10/25 add message listener to the connection
-        mConnection.addRcvListener(new RegisterListener(), null);
-        // TODO: 2016/10/25 replace with register request
-        Message msg = new Message.Builder((short) 2).build();
-        mConnection.sendMessage(msg);
+        mConnection.addRcvListener(new RegisterListener(), new MessageIdFilter(RegisterReply.ID));
+        RegisterRequest request = new RegisterRequest.Builder().build();
+        mConnection.sendMessage(request);
       }
     }
 
@@ -162,11 +163,16 @@ public class ConnectionManager {
 
   }
 
+  /** A message listener to process register reply. */
   private class RegisterListener implements MessageListener {
 
     @Override
     public void processMessage(Message msg) {
       Log.d(TAG, "processMessage: msg=" + msg);
+
+      if (RegisterReply.ID == msg.getId()) {
+        RegisterReply reply = new RegisterReply.Builder(msg).build();
+      }
     }
 
   }
