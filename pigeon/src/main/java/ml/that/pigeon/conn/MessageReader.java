@@ -56,23 +56,17 @@ class MessageReader {
     mExecutor = Executors.newSingleThreadExecutor();
   }
 
-  /**
-   * Starts the packet read thread.
-   */
+  /** Starts the packet read thread. */
   public synchronized void startup() {
     mThread.start();
   }
 
-  /**
-   * Shuts the message reader down.
-   */
+  /** Shuts the message reader down. */
   public void shutdown() {
     mDone = true;
   }
 
-  /**
-   * Parses packets in order to process them further.
-   */
+  /** Parses packets in order to process them further. */
   private void readPackets() {
     try {
       byte[] buf = new byte[128];
@@ -113,9 +107,7 @@ class MessageReader {
     mExecutor.submit(new ListenerNotification(msg));
   }
 
-  /**
-   * A thread to read packets from the connection.
-   */
+  /** A thread to read packets from the connection. */
   private class ReadThread extends Thread {
 
     @Override
@@ -126,9 +118,7 @@ class MessageReader {
 
   }
 
-  /**
-   * A runnable to notify all listeners of a message.
-   */
+  /** A runnable to notify all listeners of a message. */
   private class ListenerNotification implements Runnable {
 
     private Message message;

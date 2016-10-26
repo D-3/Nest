@@ -22,13 +22,13 @@ public class RegisterRequest extends Message {
 
   public static final short ID = 0x0100;
 
-  private static final byte[] EMPTY_MANU_ID   = new byte[5];
+  private static final byte[] EMPTY_MFRS_ID   = new byte[5];
   private static final byte[] EMPTY_CLT_MODEL = new byte[20];
   private static final byte[] EMPTY_CLT_ID    = new byte[7];
 
   private final short  mProvId;
   private final short  mCityId;
-  private final byte[] mManuId;
+  private final byte[] mMfrsId;
   private final byte[] mCltModel;
   private final byte[] mCltId;
   private final byte   mPlateColor;
@@ -39,7 +39,7 @@ public class RegisterRequest extends Message {
 
     mProvId = builder.provId;
     mCityId = builder.cityId;
-    mManuId = builder.manuId;
+    mMfrsId = builder.mfrsId;
     mCltModel = builder.cltModel;
     mCltId = builder.cltId;
     mPlateColor = builder.plateColor;
@@ -51,7 +51,7 @@ public class RegisterRequest extends Message {
     return new StringBuilder("{ id=0100")
         .append(", prov=").append(mProvId)
         .append(", city=").append(mCityId)
-        .append(", manu=").append(Arrays.toString(mManuId))
+        .append(", mfrs=").append(Arrays.toString(mMfrsId))
         .append(", model=").append(Arrays.toString(mCltModel))
         .append(", cltId=").append(Arrays.toString(mCltId))
         .append(", pClr=").append(mPlateColor)
@@ -59,42 +59,16 @@ public class RegisterRequest extends Message {
         .append(" }").toString();
   }
 
-  public static class Builder {
+  public static class Builder extends Message.Builder {
 
     // Optional parameters - initialized to default values
-    private byte   cipher     = Message.CIPHER_NONE;
-    private byte[] phone      = Message.EMPTY_PHONE;
     private short  provId     = 0;
     private short  cityId     = 0;
-    private byte[] manuId     = EMPTY_MANU_ID;
+    private byte[] mfrsId     = EMPTY_MFRS_ID;
     private byte[] cltModel   = EMPTY_CLT_MODEL;
     private byte[] cltId      = EMPTY_CLT_ID;
     private byte   plateColor = PLATE_COLOR_TEST;
     private String plateText  = null;
-    private byte[] body       = Message.EMPTY_BODY;
-
-    public Builder cipher(byte cipher) {
-      switch (cipher) {
-        case CIPHER_NONE:
-        case CIPHER_RSA:
-          this.cipher = cipher;
-          break;
-        default:
-          Log.w(TAG, "cipher: Unknown cipher mode, use default.");
-      }
-
-      return this;
-    }
-
-    public Builder phone(byte[] phone) {
-      if (phone != null && phone.length == 6) {
-        this.phone = phone;
-      } else {
-        Log.w(TAG, "phone: Illegal phone number, use default.");
-      }
-
-      return this;
-    }
 
     public Builder provId(byte id) {
       this.provId = id;
@@ -108,9 +82,9 @@ public class RegisterRequest extends Message {
 
     public Builder manuId(byte[] id) {
       if (id != null && id.length == 5) {
-        this.manuId = id;
+        this.mfrsId = id;
       } else {
-        Log.w(TAG, "manuId: Illegal manufacturer ID, use default.");
+        Log.w(TAG, "mfrsId: Illegal manufacturer ID, use default.");
       }
 
       return this;
@@ -163,11 +137,12 @@ public class RegisterRequest extends Message {
       return this;
     }
 
+    @Override
     public RegisterRequest build() {
       try {
         this.body = ArrayUtils.concatenate(IntegerUtils.asBytes(this.provId),
                                            IntegerUtils.asBytes(this.cityId),
-                                           this.manuId,
+                                           this.mfrsId,
                                            this.cltModel,
                                            this.cltId,
                                            IntegerUtils.asBytes(this.plateColor),

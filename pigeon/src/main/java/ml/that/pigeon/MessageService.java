@@ -108,9 +108,7 @@ public class MessageService extends Service {
     mExecutor.shutdown();
   }
 
-  /**
-   * Inner class for submitting a new runnable task.
-   */
+  /** Inner class for submitting a new runnable task. */
   class TaskSubmitter {
 
     private TaskSubmitter() {
@@ -128,9 +126,7 @@ public class MessageService extends Service {
 
   }
 
-  /**
-   * Inner class for monitoring the running task count.
-   */
+  /** Inner class for monitoring the running task count. */
   class TaskTracker {
 
     private int mCount;

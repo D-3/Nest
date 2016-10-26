@@ -35,20 +35,17 @@ public class RegisterReply extends Message {
   @Override
   public String toString() {
     return new StringBuilder("{ id=8100")
-        .append(", rsn=").append(mReqSn)
-        .append(", rst=").append(mResult)
+        .append(", reqSn=").append(mReqSn)
+        .append(", result=").append(mResult)
         .append(", auth=").append(mAuthCode)
         .append(" }").toString();
   }
 
-  public static class Builder {
+  public static class Builder extends Message.Builder {
 
     // Required parameters
-    private final byte   cipher;
-    private final byte[] phone;
-    private final byte[] body;
-    private final short  reqSn;
-    private final byte   result;
+    private final short reqSn;
+    private final byte  result;
 
     // Optional parameters - initialized to default values
     private String authCode = null;
@@ -89,6 +86,7 @@ public class RegisterReply extends Message {
       }
     }
 
+    @Override
     public RegisterReply build() {
       return new RegisterReply(this);
     }

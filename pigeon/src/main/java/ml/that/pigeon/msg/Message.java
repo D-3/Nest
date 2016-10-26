@@ -20,11 +20,11 @@ public class Message {// TODO: 10/23/2016 make this class abstract
 
   private static final String TAG = LogUtils.makeTag(Message.class);
 
-  static final byte CIPHER_NONE = 0;
-  static final byte CIPHER_RSA  = 1 << 2;
+  public static final byte CIPHER_NONE = 0;
+  public static final byte CIPHER_RSA  = 1 << 2;
 
-  static final byte[] EMPTY_PHONE = new byte[6];
-  static final byte[] EMPTY_BODY  = ArrayUtils.EMPTY_BYTE_ARRAY;
+  public static final byte[] EMPTY_PHONE = new byte[6];
+  public static final byte[] EMPTY_BODY  = ArrayUtils.EMPTY_BYTE_ARRAY;
 
   private final short   mId;
   private final boolean mIsLong;
@@ -130,9 +130,9 @@ public class Message {// TODO: 10/23/2016 make this class abstract
     private final short id;
 
     // Optional parameters - initialized to default values
-    private byte   cipher = CIPHER_NONE;
-    private byte[] phone  = EMPTY_PHONE;
-    private byte[] body   = EMPTY_BODY;
+    protected byte   cipher = CIPHER_NONE;
+    protected byte[] phone  = EMPTY_PHONE;
+    protected byte[] body   = EMPTY_BODY;
 
     public Builder(Packet... packets) {
       boolean found = false;

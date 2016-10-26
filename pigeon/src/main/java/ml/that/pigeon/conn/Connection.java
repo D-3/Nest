@@ -252,9 +252,7 @@ public class Connection {
     return mSndListeners;
   }
 
-  /**
-   * Initializes the connection by creating a message reader and writer.
-   */
+  /** Initializes the connection by creating a message reader and writer. */
   private void initConnection() throws IOException {
     boolean isFirstInit = (mReader == null || mWriter == null);
 
@@ -263,7 +261,7 @@ public class Connection {
       mInput = mSocket.getInputStream();
       mOutput = mSocket.getOutputStream();
     } catch (IOException ioe) {
-      // An exception occured in setting up the connection. Make sure we shut down the input
+      // An exception occurred in setting up the connection. Make sure we shut down the input
       // stream and output stream and close the socket
       if (mWriter != null) {
         mWriter.shutdown();
@@ -320,9 +318,7 @@ public class Connection {
     mConnected = true;
   }
 
-  /**
-   * A wrapper class to associate a message filter with a listener.
-   */
+  /** A wrapper class to associate a message filter with a listener. */
   static class ListenerWrapper {
 
     private MessageListener listener;
