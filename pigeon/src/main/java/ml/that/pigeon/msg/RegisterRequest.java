@@ -60,11 +60,9 @@ public class RegisterRequest extends Message {
         .append(" }").toString();
   }
 
-  public static class Builder {
+  public static class Builder extends MessageBuilder {
 
     // Optional parameters - initialized to default values
-    private byte   cipher     = Message.CIPHER_NONE;
-    private byte[] phone      = Message.EMPTY_PHONE;
     private short  provId     = 0;
     private short  cityId     = 0;
     private byte[] mfrsId     = EMPTY_MFRS_ID;
@@ -72,30 +70,6 @@ public class RegisterRequest extends Message {
     private byte[] cltId      = EMPTY_CLT_ID;
     private byte   plateColor = PLATE_COLOR_TEST;
     private String plateText  = EMPTY_PLATE_TEXT;
-    private byte[] body       = Message.EMPTY_BODY;
-
-    public Builder cipher(byte cipher) {
-      switch (cipher) {
-        case CIPHER_NONE:
-        case CIPHER_RSA:
-          this.cipher = cipher;
-          break;
-        default:
-          Log.w(TAG, "cipher: Unknown cipher mode, use default.");
-      }
-
-      return this;
-    }
-
-    public Builder phone(byte[] phone) {
-      if (phone != null && phone.length == 6) {
-        this.phone = phone;
-      } else {
-        Log.w(TAG, "phone: Illegal phone number, use default.");
-      }
-
-      return this;
-    }
 
     public Builder provId(byte id) {
       this.provId = id;
@@ -164,6 +138,7 @@ public class RegisterRequest extends Message {
       return this;
     }
 
+    @Override
     public RegisterRequest build() {
       try {
         this.body = ArrayUtils.concatenate(IntegerUtils.asBytes(this.provId),

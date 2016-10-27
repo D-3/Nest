@@ -124,15 +124,10 @@ public class Message {// TODO: 10/23/2016 make this class abstract
         .append(" }").toString();
   }
 
-  public static class Builder {
+  public static class Builder extends MessageBuilder {
 
     // Required parameters
     private final short id;
-
-    // Optional parameters - initialized to default values
-    private byte   cipher = CIPHER_NONE;
-    private byte[] phone  = EMPTY_PHONE;
-    private byte[] body   = EMPTY_BODY;
 
     public Builder(Packet... packets) {
       boolean found = false;
@@ -200,29 +195,6 @@ public class Message {// TODO: 10/23/2016 make this class abstract
       this.id = id;
     }
 
-    public Builder cipher(byte cipher) {
-      switch (cipher) {
-        case CIPHER_NONE:
-        case CIPHER_RSA:
-          this.cipher = cipher;
-          break;
-        default:
-          Log.w(TAG, "cipher: Unknown cipher mode, use default.");
-      }
-
-      return this;
-    }
-
-    public Builder phone(byte[] phone) {
-      if (phone != null && phone.length == 6) {
-        this.phone = phone;
-      } else {
-        Log.w(TAG, "phone: Illegal phone number, use default.");
-      }
-
-      return this;
-    }
-
     public Builder body(byte[] body) {
       if (body != null) {
         this.body = body;
@@ -233,6 +205,7 @@ public class Message {// TODO: 10/23/2016 make this class abstract
       return this;
     }
 
+    @Override
     public Message build() {
       return new Message(this);
     }
