@@ -17,6 +17,5 @@ public class ClientConstants {
   // Preference defaults
   public static final String PREF_DEFAULT_HOST      = "10.1.5.21";
   public static final int    PREF_DEFAULT_PORT      = 29930;
-  public static final String PREF_DEFAULT_AUTH_CODE = null;
 
 }

@@ -31,6 +31,7 @@ public class ConnectionManager {
   private SharedPreferences mPrefs;
   private String            mHost;
   private int               mPort;
+  private String            mAuthCode;
 
   private Connection mConnection;
 
@@ -45,6 +46,7 @@ public class ConnectionManager {
     mPrefs = svc.getPrefs();
     mHost = mPrefs.getString(ClientConstants.PREF_KEY_HOST, ClientConstants.PREF_DEFAULT_HOST);
     mPort = mPrefs.getInt(ClientConstants.PREF_KEY_PORT, ClientConstants.PREF_DEFAULT_PORT);
+    mAuthCode = mPrefs.getString(ClientConstants.PREF_KEY_AUTH_CODE, null);
 
     mTasks = new ArrayList<>();
     mSubmitter = svc.getSubmitter();
@@ -147,6 +149,9 @@ public class ConnectionManager {
         mConnection.addRcvListener(new RegisterListener(), new MessageIdFilter(RegisterReply.ID));
         RegisterRequest request = new RegisterRequest.Builder().build();
         mConnection.sendMessage(request);
+      } else {
+        Log.i(TAG, "run: Client registered already.");
+        runTask();
       }
     }
 
@@ -172,6 +177,29 @@ public class ConnectionManager {
 
       if (RegisterReply.ID == msg.getId()) {
         RegisterReply reply = new RegisterReply.Builder(msg).build();
+        switch (reply.getResult()) {
+          case RegisterReply.RESULT_OK:
+            mAuthCode = reply.getAuthCode();
+            Log.d(TAG, "processMessage: authCode=" + mAuthCode);
+            mPrefs.edit().putString(ClientConstants.PREF_KEY_AUTH_CODE, mAuthCode).commit();
+            Log.i(TAG, "processMessage: Client registered successfully.");
+            runTask();
+            break;
+          case RegisterReply.RESULT_VEH_NOT_FOUND:
+            Log.w(TAG, "processMessage: Registration failed - vehicle not found.");
+            break;
+          case RegisterReply.RESULT_VEH_REGISTERED:
+            Log.w(TAG, "processMessage: Registration failed - vehicle registered.");
+            break;
+          case RegisterReply.RESULT_CLT_NOT_FOUND:
+            Log.w(TAG, "processMessage: Registration failed - client not found.");
+            break;
+          case RegisterReply.RESULT_CLT_REGISTERED:
+            Log.w(TAG, "processMessage: Registration failed - client registered.");
+            break;
+          default:
+            Log.e(TAG, "processMessage: Unknown registration result.");
+        }
       }
     }
 

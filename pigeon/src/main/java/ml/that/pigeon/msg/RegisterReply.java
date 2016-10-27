@@ -32,6 +32,18 @@ public class RegisterReply extends Message {
     mAuthCode = builder.authCode;
   }
 
+  public short getReqSn() {
+    return mReqSn;
+  }
+
+  public byte getResult() {
+    return mResult;
+  }
+
+  public String getAuthCode() {
+    return mAuthCode;
+  }
+
   @Override
   public String toString() {
     return new StringBuilder("{ id=8100")
