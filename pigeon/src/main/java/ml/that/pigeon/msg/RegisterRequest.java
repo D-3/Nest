@@ -22,9 +22,10 @@ public class RegisterRequest extends Message {
 
   public static final short ID = 0x0100;
 
-  private static final byte[] EMPTY_MFRS_ID   = new byte[5];
-  private static final byte[] EMPTY_CLT_MODEL = new byte[20];
-  private static final byte[] EMPTY_CLT_ID    = new byte[7];
+  private static final byte[] EMPTY_MFRS_ID    = new byte[5];
+  private static final byte[] EMPTY_CLT_MODEL  = new byte[20];
+  private static final byte[] EMPTY_CLT_ID     = new byte[7];
+  private static final String EMPTY_PLATE_TEXT = "";
 
   private final short  mProvId;
   private final short  mCityId;
@@ -59,16 +60,42 @@ public class RegisterRequest extends Message {
         .append(" }").toString();
   }
 
-  public static class Builder extends Message.Builder {
+  public static class Builder {
 
     // Optional parameters - initialized to default values
+    private byte   cipher     = Message.CIPHER_NONE;
+    private byte[] phone      = Message.EMPTY_PHONE;
     private short  provId     = 0;
     private short  cityId     = 0;
     private byte[] mfrsId     = EMPTY_MFRS_ID;
     private byte[] cltModel   = EMPTY_CLT_MODEL;
     private byte[] cltId      = EMPTY_CLT_ID;
     private byte   plateColor = PLATE_COLOR_TEST;
-    private String plateText  = null;
+    private String plateText  = EMPTY_PLATE_TEXT;
+    private byte[] body       = Message.EMPTY_BODY;
+
+    public Builder cipher(byte cipher) {
+      switch (cipher) {
+        case CIPHER_NONE:
+        case CIPHER_RSA:
+          this.cipher = cipher;
+          break;
+        default:
+          Log.w(TAG, "cipher: Unknown cipher mode, use default.");
+      }
+
+      return this;
+    }
+
+    public Builder phone(byte[] phone) {
+      if (phone != null && phone.length == 6) {
+        this.phone = phone;
+      } else {
+        Log.w(TAG, "phone: Illegal phone number, use default.");
+      }
+
+      return this;
+    }
 
     public Builder provId(byte id) {
       this.provId = id;
@@ -80,7 +107,7 @@ public class RegisterRequest extends Message {
       return this;
     }
 
-    public Builder manuId(byte[] id) {
+    public Builder mfrsId(byte[] id) {
       if (id != null && id.length == 5) {
         this.mfrsId = id;
       } else {
@@ -137,7 +164,6 @@ public class RegisterRequest extends Message {
       return this;
     }
 
-    @Override
     public RegisterRequest build() {
       try {
         this.body = ArrayUtils.concatenate(IntegerUtils.asBytes(this.provId),

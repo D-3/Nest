@@ -41,11 +41,14 @@ public class RegisterReply extends Message {
         .append(" }").toString();
   }
 
-  public static class Builder extends Message.Builder {
+  public static class Builder {
 
     // Required parameters
-    private final short reqSn;
-    private final byte  result;
+    private final byte   cipher;
+    private final byte[] phone;
+    private final byte[] body;
+    private final short  reqSn;
+    private final byte   result;
 
     // Optional parameters - initialized to default values
     private String authCode = null;
@@ -86,7 +89,6 @@ public class RegisterReply extends Message {
       }
     }
 
-    @Override
     public RegisterReply build() {
       return new RegisterReply(this);
     }

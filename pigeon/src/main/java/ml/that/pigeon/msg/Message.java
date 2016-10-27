@@ -130,9 +130,9 @@ public class Message {// TODO: 10/23/2016 make this class abstract
     private final short id;
 
     // Optional parameters - initialized to default values
-    protected byte   cipher = CIPHER_NONE;
-    protected byte[] phone  = EMPTY_PHONE;
-    protected byte[] body   = EMPTY_BODY;
+    private byte   cipher = CIPHER_NONE;
+    private byte[] phone  = EMPTY_PHONE;
+    private byte[] body   = EMPTY_BODY;
 
     public Builder(Packet... packets) {
       boolean found = false;
