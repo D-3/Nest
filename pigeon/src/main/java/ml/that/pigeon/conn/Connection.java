@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import ml.that.pigeon.auth.BasicAuthentication;
 import ml.that.pigeon.filter.MessageFilter;
 import ml.that.pigeon.msg.Message;
 import ml.that.pigeon.util.LogUtils;
@@ -61,7 +62,9 @@ public class Connection {
   private MessageReader mReader;
   private MessageWriter mWriter;
 
-  private boolean mConnected = false;
+  private boolean mConnected     = false;
+  // Flag that indicates if the client is currently authenticated with the server
+  private boolean mAuthenticated = false;
 
   // mSocketClosed is used concurrent by Connection, MessageReader, MessageWriter
   private volatile boolean mSocketClosed = false;
@@ -106,6 +109,36 @@ public class Connection {
     // TODO: 10/23/2016 implement this method
   }
 
+  /**
+   * Logs in to the server using the strongest authentication mode supported by the server. If the
+   * server supports advanced authentication then the client will be authenticated using advanced if
+   * not basic authentication will be tried. If more than five seconds (default timeout) elapses in
+   * each step of the authentication process without a reply from the server, or if an error
+   * occurs.
+   * <p>
+   * Before logging in (i.e. authenticate) to the server the connection must be connected.
+   *
+   * @param auth the authentication code
+   */
+  public synchronized void login(String auth) {
+    if (!isConnected()) {
+      throw new IllegalStateException("Not connected to server.");
+    }
+    if (isAuthenticated()) {
+      throw new IllegalStateException("Already logged in to server.");
+    }
+
+    // TODO: 2016/10/28 choose from basic and advanced authentication
+    // Authenticate using basic
+    boolean result = new BasicAuthentication(this).authenticate(auth);
+
+    if (result == true) {
+      mAuthenticated = true;
+    } else {
+      mAuthenticated = false;
+    }
+  }
+
   public void sendMessage(Message msg) {
     if (!isConnected()) {
       throw new IllegalStateException("Not connected to server.");
@@ -141,6 +174,10 @@ public class Connection {
    */
   public boolean isConnected() {
     return mConnected;
+  }
+
+  public boolean isAuthenticated() {
+    return mAuthenticated;
   }
 
   public boolean isSocketClosed() {

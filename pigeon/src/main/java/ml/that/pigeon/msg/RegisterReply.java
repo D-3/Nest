@@ -67,7 +67,7 @@ public class RegisterReply extends Message {
         throw new NullPointerException("Message is null.");
       }
       if (ID != msg.getId()) {
-        throw new IllegalArgumentException("Wrong message id.");
+        throw new IllegalArgumentException("Wrong message ID.");
       }
       if (msg.getBody().length < 3) {
         throw new IllegalArgumentException("Message body incomplete.");
@@ -76,7 +76,9 @@ public class RegisterReply extends Message {
       this.cipher = msg.getCipher();
       this.phone = msg.getPhone();
       this.body = msg.getBody();
+
       this.reqSn = IntegerUtils.parseShort(Arrays.copyOf(this.body, 2));
+
       switch (this.body[2]) {
         case RESULT_OK:
           if (this.body.length < 4) {

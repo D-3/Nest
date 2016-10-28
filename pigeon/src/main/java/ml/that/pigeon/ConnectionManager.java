@@ -69,6 +69,10 @@ public class ConnectionManager {
     return mPrefs.contains(ClientConstants.PREF_KEY_AUTH_CODE);
   }
 
+  private boolean isAuthenticated() {
+    return mConnection != null && mConnection.isConnected() && mConnection.isAuthenticated();
+  }
+
   private void addTask(Runnable task) {
     Log.d(TAG, "addTask: ");
 
@@ -163,7 +167,14 @@ public class ConnectionManager {
     @Override
     public void run() {
       Log.i(TAG, "run: Logging in...");
-      // TODO: 10/23/2016 implement this method
+
+      if (!isAuthenticated()) {
+        Log.d(TAG, "run: auth=" + mAuthCode);
+
+        mConnection.login(mAuthCode);
+        Log.d(TAG, "run: Logged in successfully.");
+        runTask();
+      }
     }
 
   }
