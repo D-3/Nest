@@ -16,7 +16,7 @@ public class ChallengeCommand extends Message {
 
   public static final short ID = (short) 0x9001;
 
-  private static final byte ALGORITHM_AES128 = 0;
+  public static final byte ALGORITHM_AES128 = 0;
 
   private final byte   mAlgorithm;
   private final short  mSvrKeyIndex;
@@ -32,12 +32,28 @@ public class ChallengeCommand extends Message {
     mEncryptedRdmA = builder.encryptedRdmA;
   }
 
+  public byte getAlgorithm() {
+    return mAlgorithm;
+  }
+
+  public short getSvrKeyIndex() {
+    return mSvrKeyIndex;
+  }
+
+  public short getCltKeyIndex() {
+    return mCltKeyIndex;
+  }
+
+  public byte[] getEncryptedRdmA() {
+    return mEncryptedRdmA;
+  }
+
   @Override
   public String toString() {
     return new StringBuilder("{ id=9001")
-        .append(", algo=").append(mAlgorithm)
-        .append(", svrK=").append(mSvrKeyIndex)
-        .append(", cltK=").append(mCltKeyIndex)
+        .append(", alg=").append(mAlgorithm)
+        .append(", sKey=").append(mSvrKeyIndex)
+        .append(", cKey=").append(mCltKeyIndex)
         .append(", rdmA=").append(mEncryptedRdmA)
         .append(" }").toString();
   }
@@ -70,7 +86,7 @@ public class ChallengeCommand extends Message {
           this.algorithm = this.body[0];
           break;
         default:
-          throw new IllegalArgumentException("Unknown algorithm.");
+          throw new IllegalArgumentException("No such algorithm.");
       }
 
       this.svrKeyIndex = IntegerUtils.parseShort(Arrays.copyOfRange(this.body, 1, 3));
