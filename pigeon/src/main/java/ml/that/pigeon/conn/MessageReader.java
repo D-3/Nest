@@ -1,5 +1,7 @@
 package ml.that.pigeon.conn;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
@@ -76,6 +78,7 @@ class MessageReader {
           byte[] raw = new byte[len];
           System.arraycopy(buf, 0, raw, 0, len);
           Packet packet = new Packet(raw);
+          Log.d(TAG, "readPackets: " + packet);
           Message msg = new Message.Builder(packet).build();
           processMessage(msg);
         }

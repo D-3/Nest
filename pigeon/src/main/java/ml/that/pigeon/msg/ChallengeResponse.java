@@ -224,22 +224,23 @@ public class ChallengeResponse extends Message {
     @Override
     public ChallengeResponse build() {
       try {
-        this.body = ArrayUtils.concatenate(this.mfrsId,
-                                           this.cltId,
-                                           IntegerUtils.toBcd(this.hardwareVer),
-                                           IntegerUtils.toBcd(this.softwareVer),
-                                           IntegerUtils.toBcd(this.protocolVer),
-                                           IntegerUtils.toBcd(this.customVer),
-                                           RESERVED_FIELD,
-                                           IntegerUtils.asBytes(this.plateColor),
-                                           this.plateText.getBytes("ascii"),
-                                           this.schoolNo,
-                                           RESERVED_FIELD,
-                                           IntegerUtils.asBytes(this.cltKeyIndex),
-                                           this.encryptedRdmB,
-                                           this.encryptedCltChk,
-                                           this.encryptedDvcSn,
-                                           this.encryptedSvrAddr);
+        this.body =
+            ArrayUtils.concatenate(this.mfrsId,
+                                   this.cltId,
+                                   ArrayUtils.ensureLength(IntegerUtils.toBcd(this.hardwareVer), 2),
+                                   ArrayUtils.ensureLength(IntegerUtils.toBcd(this.softwareVer), 2),
+                                   ArrayUtils.ensureLength(IntegerUtils.toBcd(this.protocolVer), 2),
+                                   ArrayUtils.ensureLength(IntegerUtils.toBcd(this.customVer), 1),
+                                   RESERVED_FIELD,
+                                   IntegerUtils.asBytes(this.plateColor),
+                                   ArrayUtils.ensureLength(this.plateText.getBytes("ascii"), 12),
+                                   this.schoolNo,
+                                   RESERVED_FIELD,
+                                   IntegerUtils.asBytes(this.cltKeyIndex),
+                                   this.encryptedRdmB,
+                                   this.encryptedCltChk,
+                                   this.encryptedDvcSn,
+                                   this.encryptedSvrAddr);
       } catch (UnsupportedEncodingException uee) {
         Log.e(TAG, "build: Encode message body failed.", uee);
       }

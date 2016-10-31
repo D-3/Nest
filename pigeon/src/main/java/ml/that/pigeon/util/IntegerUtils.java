@@ -104,7 +104,7 @@ public class IntegerUtils {
 
     bytes = ArrayUtils.ensureLength(bytes, 2);
 
-    return (short) ((bytes[bytes.length - 2] & 0xff) << 8 | (bytes[bytes.length - 1] & 0xff));
+    return (short) ((bytes[0] & 0xff) << 8 | (bytes[1] & 0xff));
   }
 
   /**
@@ -120,10 +120,10 @@ public class IntegerUtils {
 
     bytes = ArrayUtils.ensureLength(bytes, 4);
 
-    return (bytes[bytes.length - 4] & 0xff) << 24
-           | (bytes[bytes.length - 3] & 0xff) << 16
-           | (bytes[bytes.length - 2] & 0xff) << 8
-           | (bytes[bytes.length - 1] & 0xff);
+    return (bytes[0] & 0xff) << 24
+           | (bytes[1] & 0xff) << 16
+           | (bytes[2] & 0xff) << 8
+           | (bytes[3] & 0xff);
   }
 
   /**
@@ -139,14 +139,14 @@ public class IntegerUtils {
 
     bytes = ArrayUtils.ensureLength(bytes, 8);
 
-    return (bytes[bytes.length - 8] & 0xffL) << 56
-           | (bytes[bytes.length - 7] & 0xffL) << 48
-           | (bytes[bytes.length - 6] & 0xffL) << 40
-           | (bytes[bytes.length - 5] & 0xffL) << 32
-           | (bytes[bytes.length - 4] & 0xffL) << 24
-           | (bytes[bytes.length - 3] & 0xffL) << 16
-           | (bytes[bytes.length - 2] & 0xffL) << 8
-           | (bytes[bytes.length - 1] & 0xffL);
+    return (bytes[0] & 0xffL) << 56
+           | (bytes[1] & 0xffL) << 48
+           | (bytes[2] & 0xffL) << 40
+           | (bytes[3] & 0xffL) << 32
+           | (bytes[4] & 0xffL) << 24
+           | (bytes[5] & 0xffL) << 16
+           | (bytes[6] & 0xffL) << 8
+           | (bytes[7] & 0xffL);
   }
 
   @SuppressWarnings("unchecked")

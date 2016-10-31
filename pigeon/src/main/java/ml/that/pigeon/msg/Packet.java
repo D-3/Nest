@@ -164,4 +164,18 @@ public class Packet {
     return mPayload;
   }
 
+  @Override
+  public String toString() {
+    return new StringBuilder()
+        .append("{ id=").append(mMsgId)
+        .append(", lng=").append(mIsLongMsg)
+        .append(", ciph=").append(mCipher)
+        .append(", phn=").append(mPhone)
+        .append(", sn=").append(mSn)
+        .append(", ttl=").append(mTotal)
+        .append(", idx=").append(mIndex)
+        .append(", pld=").append(Arrays.toString(mPayload))
+        .append(" }").toString();
+  }
+
 }

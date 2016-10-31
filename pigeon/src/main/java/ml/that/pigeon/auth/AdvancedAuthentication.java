@@ -16,6 +16,7 @@ import ml.that.pigeon.msg.ChallengeCommand;
 import ml.that.pigeon.msg.ChallengeResponse;
 import ml.that.pigeon.msg.LoginCommand;
 import ml.that.pigeon.msg.LoginResponse;
+import ml.that.pigeon.msg.Message;
 import ml.that.pigeon.util.ArrayUtils;
 import ml.that.pigeon.util.CryptoUtils;
 
@@ -39,7 +40,8 @@ public class AdvancedAuthentication {
     AuthenticateRequest request = new AuthenticateRequest.Builder(auth).build();
     mConnection.sendMessage(request);
     // Wait up to a certain number of seconds for a challenge command from the server
-    ChallengeCommand challenge = (ChallengeCommand) challengeCollector.nextResult(5000L);
+    Message challengeMsg = challengeCollector.nextResult(5000L);
+    ChallengeCommand challenge = new ChallengeCommand.Builder(challengeMsg).build();
     if (challenge == null) {
       throw new NullPointerException("No command from the server.");
     }
@@ -83,7 +85,7 @@ public class AdvancedAuthentication {
 
       // TODO: 10/29/2016 replace fake data
       byte[] encryptedRdmB =
-          CryptoUtils.encrypt(ArrayUtils.leftXor(rdmB, "8619800".getBytes("ascii")), cltKey);
+          CryptoUtils.encrypt(ArrayUtils.leftXor(rdmB, "1234567".getBytes("ascii")), cltKey);
       byte[] encryptedCltChk = CryptoUtils.encrypt(ArrayUtils.leftXor(rdmA, rdmB), cltKey);
       byte[] encryptedDvcSn = CryptoUtils.encrypt(ArrayUtils.leftXor(new byte[16], rdmA), cltKey);
       byte[] encryptedSvrAddr =
@@ -91,11 +93,14 @@ public class AdvancedAuthentication {
                               cltKey);
 
       // Send the response
-      ChallengeResponse response = new ChallengeResponse.Builder(cKeyIdx,
-                                                                 encryptedRdmB,
-                                                                 encryptedCltChk,
-                                                                 encryptedDvcSn,
-                                                                 encryptedSvrAddr).build();
+      // TODO: 2016/10/31 move the encryption processes into the challenge response
+      ChallengeResponse response =
+          new ChallengeResponse.Builder(cKeyIdx,
+                                        encryptedRdmB,
+                                        encryptedCltChk,
+                                        encryptedDvcSn,
+                                        encryptedSvrAddr)
+              .cltId("1234567".getBytes("ascii")).build();
       mConnection.sendMessage(response);
     } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
       Log.e(TAG, "authenticate: Encryption failed.", e);
@@ -105,7 +110,8 @@ public class AdvancedAuthentication {
       return false;
     }
     // Wait up to a certain number of seconds for a login command from the server
-    LoginCommand command = (LoginCommand) loginCollector.nextResult(5000L);
+    Message loginMsg = loginCollector.nextResult(5000L);
+    LoginCommand command = new LoginCommand.Builder(loginMsg).build();
     if (command == null) {
       throw new NullPointerException("No command from the server.");
     }

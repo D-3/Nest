@@ -27,7 +27,7 @@ public class LoginCommand extends Message {
   public static final byte RESULT_WRONG_SVR_ADDR      = 6;
   public static final byte RESULT_UNEXPECTED_CLT_KEY  = 7;
   public static final byte RESULT_WRONG_HARDWARE      = 8;
-  public static final byte RESULT_WRONG_CLT_CHK       = 9;
+  public static final byte RESULT_WRONG_CLT_CHK       = 12;
   public static final byte RESULT_TEST                = (byte) 254;
   public static final byte RESULT_OTHER_ERROR         = (byte) 255;
 

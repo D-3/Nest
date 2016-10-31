@@ -89,7 +89,7 @@ public class ServerGenericReply extends Message {
     }
 
     @Override
-    public Message build() {
+    public ServerGenericReply build() {
       return new ServerGenericReply(this);
     }
 

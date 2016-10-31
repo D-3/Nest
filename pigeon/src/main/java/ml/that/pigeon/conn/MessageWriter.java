@@ -1,5 +1,7 @@
 package ml.that.pigeon.conn;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -101,6 +103,7 @@ class MessageWriter {
       while (!mDone) {
         Packet packet = nextPacket();
         if (packet != null) {
+          Log.d(TAG, "writePackets: " + packet);
           synchronized (mOutput) {
             mOutput.write(packet.getBytes());
             mOutput.flush();

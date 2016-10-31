@@ -34,7 +34,7 @@ public class CryptoUtils {
       Cipher cipher = Cipher.getInstance("aes/ecb/nopadding");
       cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(key.getBytes("ascii"), "aes"));
       byte[] crypto = cipher.doFinal(in);
-      return ArrayUtils.concatenate(IntegerUtils.asBytes(crypto.length), crypto);
+      return ArrayUtils.concatenate(IntegerUtils.asBytes((byte) crypto.length), crypto);
     } catch (NoSuchAlgorithmException | NoSuchPaddingException | UnsupportedEncodingException e) {
       Log.w(TAG, "encrypt: Encrypt failed.", e);
       return null;

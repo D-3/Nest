@@ -367,7 +367,22 @@ public class ArrayUtils {
   }
 
   @SuppressWarnings("unchecked")
-  public static byte[] ensureLength(byte[] arr, int min) {
+  public static byte[] ensureLength(byte[] arr, int len) {
+    if (isEmpty(arr)) {
+      return new byte[len];
+    }
+    if (arr.length < len) {
+      return concatenate(new byte[len - arr.length], arr);
+    }
+    if (arr.length > len) {
+      return Arrays.copyOf(arr, len);
+    }
+
+    return arr;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static byte[] ensureMinLength(byte[] arr, int min) {
     if (isEmpty(arr)) {
       return new byte[min];
     }
@@ -376,6 +391,18 @@ public class ArrayUtils {
     }
 
     return concatenate(new byte[min - arr.length], arr);
+  }
+
+  @SuppressWarnings("unchecked")
+  public static byte[] ensureMaxLength(byte[] arr, int max) {
+    if (isEmpty(arr)) {
+      return EMPTY_BYTE_ARRAY;
+    }
+    if (arr.length <= max) {
+      return arr;
+    }
+
+    return Arrays.copyOf(arr, max);
   }
 
   /**

@@ -4,6 +4,7 @@ import ml.that.pigeon.conn.Connection;
 import ml.that.pigeon.conn.MessageCollector;
 import ml.that.pigeon.filter.MessageIdFilter;
 import ml.that.pigeon.msg.AuthenticateRequest;
+import ml.that.pigeon.msg.Message;
 import ml.that.pigeon.msg.ServerGenericReply;
 
 public class BasicAuthentication {
@@ -21,7 +22,8 @@ public class BasicAuthentication {
     // Send the message
     mConnection.sendMessage(request);
     // Wait up to a certain number of seconds for a reply from the server
-    ServerGenericReply reply = (ServerGenericReply) collector.nextResult(5000L);
+    Message replyMsg = collector.nextResult(5000L);
+    ServerGenericReply reply = new ServerGenericReply.Builder(replyMsg).build();
     if (reply == null) {
       throw new NullPointerException("No reply from the server.");
     }

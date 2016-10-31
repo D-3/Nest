@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import ml.that.pigeon.auth.BasicAuthentication;
+import ml.that.pigeon.auth.AdvancedAuthentication;
 import ml.that.pigeon.filter.MessageFilter;
 import ml.that.pigeon.msg.Message;
 import ml.that.pigeon.util.LogUtils;
@@ -130,7 +130,7 @@ public class Connection {
 
     // TODO: 2016/10/28 choose from basic and advanced authentication
     // Authenticate using basic
-    boolean result = new BasicAuthentication(this).authenticate(auth);
+    boolean result = new AdvancedAuthentication(this).authenticate(auth);
 
     if (result == true) {
       mAuthenticated = true;
