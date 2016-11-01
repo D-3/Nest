@@ -353,6 +353,10 @@ public class Connection {
 
     // Make note of the fact that we're now connected
     mConnected = true;
+
+    // TODO: 2016/11/1 move this to when logged in
+    // Start keep alive process
+    mWriter.keepAlive();
   }
 
   /** A wrapper class to associate a message filter with a listener. */

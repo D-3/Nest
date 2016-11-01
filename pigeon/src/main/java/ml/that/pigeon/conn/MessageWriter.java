@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import ml.that.pigeon.msg.HeartbeatRequest;
 import ml.that.pigeon.msg.Message;
 import ml.that.pigeon.msg.Packet;
 import ml.that.pigeon.util.LogUtils;
@@ -28,9 +29,14 @@ class MessageWriter {
 
   private Connection   mConnection;
   private OutputStream mOutput;
-  private Thread       mThread;
+  private Thread       mWriteThread;
+  private Thread       mKeepAliveThread;
 
   private boolean mDone;
+
+  // Timestamp when the last packet was sent to the server. This information is used by the keep
+  // alive process to only send heartbeats when the connection has been idle
+  private long mLastActive = System.currentTimeMillis();
 
   /**
    * Creates a new message writer with the specified connection.
@@ -51,10 +57,10 @@ class MessageWriter {
     mDone = false;
     mOutput = mConnection.getOutput();
 
-    mThread = new WriteThread();
+    mWriteThread = new WriteThread();
     // TODO: 10/24/2016 add connection count to the name
-    mThread.setName("Pigeon Message Writer ( )");
-    mThread.setDaemon(true);
+    mWriteThread.setName("Pigeon Message Writer ( )");
+    mWriteThread.setDaemon(true);
   }
 
   /**
@@ -62,7 +68,7 @@ class MessageWriter {
    * #shutdown} or an error occurs.
    */
   public void startup() {
-    mThread.start();
+    mWriteThread.start();
   }
 
   /**
@@ -73,6 +79,25 @@ class MessageWriter {
     mDone = true;
     synchronized (mQueue) {
       mQueue.notifyAll();
+    }
+  }
+
+  /**
+   * Starts the keep alive process. An empty message (aka heartbeat) is going to be sent to the
+   * server every 30 seconds (by default) since the last packet was sent to the server.
+   */
+  void keepAlive() {
+    // Schedule a keep-alive task to run if the feature is enabled, will write out a empty
+    // message each time it runs to keep the TCP/IP connection open
+    // TODO: 2016/11/1 read from preferences
+    int keepAliveInterval = 30;
+    if (keepAliveInterval > 0) {
+      KeepAliveTask task = new KeepAliveTask(keepAliveInterval);
+      mKeepAliveThread = new Thread(task);
+      mKeepAliveThread.setDaemon(true);
+      // TODO: 2016/11/1 replace with connection counter value
+      mKeepAliveThread.setName("Pigeon Keep Alive ( )");
+      mKeepAliveThread.start();
     }
   }
 
@@ -107,6 +132,8 @@ class MessageWriter {
           synchronized (mOutput) {
             mOutput.write(packet.getBytes());
             mOutput.flush();
+            // Keep track of the last time a packet was sent to the server
+            mLastActive = System.currentTimeMillis();
           }
         }
       }
@@ -158,6 +185,46 @@ class MessageWriter {
     public void run() {
       super.run();
       writePackets();
+    }
+
+  }
+
+  /**
+   * A TimerTask that keeps connections to the server alive by sending a empty message on an
+   * interval.
+   */
+  private class KeepAliveTask implements Runnable {
+
+    private int delay;
+
+    public KeepAliveTask(int delay) {
+      this.delay = delay;
+    }
+
+    @Override
+    public void run() {
+      try {
+        // Sleep a minimum of 15 seconds plus delay before sending first heartbeat
+        Thread.sleep(15000 + delay * 1000L);
+      } catch (InterruptedException ie) {
+        // Do nothing
+      }
+
+      while (!mDone) {
+        synchronized (mOutput) {
+          // Send heartbeat if no packet has been sent to the server for a given time
+          if (System.currentTimeMillis() - mLastActive >= delay * 1000L) {
+            sendMessage(new HeartbeatRequest.Builder().build());
+          }
+        }
+
+        try {
+          // Sleep until we should write the next keep-alive
+          Thread.sleep(delay * 1000L);
+        } catch (InterruptedException ie) {
+          // Do nothing
+        }
+      }
     }
 
   }

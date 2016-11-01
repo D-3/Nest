@@ -25,7 +25,7 @@ class MessageReader {
 
   private Connection      mConnection;
   private InputStream     mInput;
-  private Thread          mThread;
+  private Thread          mReadThread;
   private ExecutorService mExecutor;
 
   private boolean mDone;
@@ -48,10 +48,10 @@ class MessageReader {
     mDone = false;
     mInput = mConnection.getInput();
 
-    mThread = new ReadThread();
+    mReadThread = new ReadThread();
     // TODO: 10/24/2016 add connection count to the name
-    mThread.setName("Pigeon Message Reader ( )");
-    mThread.setDaemon(true);
+    mReadThread.setName("Pigeon Message Reader ( )");
+    mReadThread.setDaemon(true);
 
     // Create an executor to deliver incoming messages to listeners. We'll use a single thread with
     // an unbounded queue
@@ -60,7 +60,7 @@ class MessageReader {
 
   /** Starts the packet read thread. */
   public synchronized void startup() {
-    mThread.start();
+    mReadThread.start();
   }
 
   /** Shuts the message reader down. */
