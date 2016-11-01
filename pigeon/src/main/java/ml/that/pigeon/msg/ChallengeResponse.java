@@ -3,9 +3,14 @@ package ml.that.pigeon.msg;
 import android.util.Log;
 
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 
 import ml.that.pigeon.Jtt415Constants;
 import ml.that.pigeon.util.ArrayUtils;
+import ml.that.pigeon.util.CryptoUtils;
 import ml.that.pigeon.util.IntegerUtils;
 import ml.that.pigeon.util.LogUtils;
 
@@ -36,28 +41,30 @@ public class ChallengeResponse extends Message {
   private final String mPlateText;
   private final byte[] mSchoolNo;
   private final short  mCltKeyIndex;
-  private final byte[] mEncryptedRdmB;
-  private final byte[] mEncryptedCltChk;
-  private final byte[] mEncryptedDvcSn;
-  private final byte[] mEncryptedSvrAddr;
+  private final String mCltKey;
+  private final byte[] mRandomA;
+  private final byte[] mRandomB;
+  private final byte[] mDeviceSn;
+  private final byte[] mSvrAddress;
 
   private ChallengeResponse(Builder builder) {
     super(ID, builder.cipher, builder.phone, builder.body);
 
-    this.mMfrsId = builder.mfrsId;
-    this.mCltId = builder.cltId;
-    this.mHardwareVer = builder.hardwareVer;
-    this.mSoftwareVer = builder.softwareVer;
-    this.mProtocolVer = builder.protocolVer;
-    this.mCustomVer = builder.customVer;
-    this.mPlateColor = builder.plateColor;
-    this.mPlateText = builder.plateText;
-    this.mSchoolNo = builder.schoolNo;
-    this.mCltKeyIndex = builder.cltKeyIndex;
-    this.mEncryptedRdmB = builder.encryptedRdmB;
-    this.mEncryptedCltChk = builder.encryptedCltChk;
-    this.mEncryptedDvcSn = builder.encryptedDvcSn;
-    this.mEncryptedSvrAddr = builder.encryptedSvrAddr;
+    mMfrsId = builder.mfrsId;
+    mCltId = builder.cltId;
+    mHardwareVer = builder.hardwareVer;
+    mSoftwareVer = builder.softwareVer;
+    mProtocolVer = builder.protocolVer;
+    mCustomVer = builder.customVer;
+    mPlateColor = builder.plateColor;
+    mPlateText = builder.plateText;
+    mSchoolNo = builder.schoolNo;
+    mCltKeyIndex = builder.cltKeyIndex;
+    mCltKey = builder.cltKey;
+    mRandomA = builder.randomA;
+    mRandomB = builder.randomB;
+    mDeviceSn = builder.deviceSn;
+    mSvrAddress = builder.svrAddress;
   }
 
   @Override
@@ -72,11 +79,11 @@ public class ChallengeResponse extends Message {
         .append(", pClr=").append(mPlateColor)
         .append(", pTxt=").append(mPlateText)
         .append(", sch=").append(mSchoolNo)
-        .append(", cKey=").append(mCltKeyIndex)
-        .append(", rdmB=").append(mEncryptedRdmB)
-        .append(", cChk=").append(mEncryptedCltChk)
-        .append(", dvc=").append(mEncryptedDvcSn)
-        .append(", sAddr=").append(mEncryptedSvrAddr)
+        .append(", cKey=").append(mCltKeyIndex).append("-").append(mCltKey)
+        .append(", rdmA=").append(mRandomA)
+        .append(", rdmB=").append(mRandomB)
+        .append(", dvc=").append(mDeviceSn)
+        .append(", addr=").append(mSvrAddress)
         .append(" }").toString();
   }
 
@@ -84,10 +91,9 @@ public class ChallengeResponse extends Message {
 
     // Required parameters
     private final short  cltKeyIndex;
-    private final byte[] encryptedRdmB;
-    private final byte[] encryptedCltChk;
-    private final byte[] encryptedDvcSn;
-    private final byte[] encryptedSvrAddr;
+    private final String cltKey;
+    private final byte[] randomA;
+    private final byte[] randomB;
 
     // Optional parameters - initialized to default values
     private byte[] mfrsId      = EMPTY_MFRS_ID;
@@ -99,29 +105,24 @@ public class ChallengeResponse extends Message {
     private byte   plateColor  = Jtt415Constants.PLATE_COLOR_TEST;
     private String plateText   = EMPTY_PLATE_TEXT;
     private byte[] schoolNo    = EMPTY_SCHOOL_NO;
+    private byte[] deviceSn    = RESERVED_FIELD;
+    private byte[] svrAddress  = RESERVED_FIELD;
 
-    public Builder(short idx, byte[] rdm, byte[] chk, byte[] sn, byte[] addr) {
+    public Builder(short idx, String key, byte[] rdmA, byte[] rdmB) {
       if (idx < 0) {
         throw new IllegalArgumentException("Client key index is less than 0.");
       }
-      if (rdm == null || rdm.length != 17) {
-        throw new IllegalArgumentException("Encrypted random number B incorrect.");
+      if (rdmA == null || rdmA.length != 16) {
+        throw new IllegalArgumentException("Random number A incorrect.");
       }
-      if (chk == null || chk.length != 17) {
-        throw new IllegalArgumentException("Encrypted client checksum incorrect.");
-      }
-      if (sn == null || sn.length != 17) {
-        throw new IllegalArgumentException("Encrypted device SN incorrect.");
-      }
-      if (addr == null || addr.length != 17) {
-        throw new IllegalArgumentException("Encrypted server address incorrect.");
+      if (rdmB == null || rdmB.length != 16) {
+        throw new IllegalArgumentException("Random number B incorrect.");
       }
 
       this.cltKeyIndex = idx;
-      this.encryptedRdmB = rdm;
-      this.encryptedCltChk = chk;
-      this.encryptedDvcSn = sn;
-      this.encryptedSvrAddr = addr;
+      this.cltKey = key;
+      this.randomA = rdmA;
+      this.randomB = rdmB;
     }
 
     public Builder mfrsId(byte[] id) {
@@ -221,28 +222,53 @@ public class ChallengeResponse extends Message {
       return this;
     }
 
+    public Builder deviceSn(byte[] sn) {
+      if (sn != null && sn.length == 16) {
+        this.deviceSn = sn;
+      } else {
+        Log.w(TAG, "deviceSn: Illegal device SN, use default.");
+      }
+
+      return this;
+    }
+
+    public Builder svrAddress(byte[] addr) {
+      if (addr != null && addr.length == 16) {
+        this.svrAddress = addr;
+      } else {
+        Log.w(TAG, "svrAddress: Illegal server address, use default.");
+      }
+
+      return this;
+    }
+
     @Override
     public ChallengeResponse build() {
       try {
         this.body =
-            ArrayUtils.concatenate(this.mfrsId,
-                                   this.cltId,
-                                   ArrayUtils.ensureLength(IntegerUtils.toBcd(this.hardwareVer), 2),
-                                   ArrayUtils.ensureLength(IntegerUtils.toBcd(this.softwareVer), 2),
-                                   ArrayUtils.ensureLength(IntegerUtils.toBcd(this.protocolVer), 2),
-                                   ArrayUtils.ensureLength(IntegerUtils.toBcd(this.customVer), 1),
-                                   RESERVED_FIELD,
-                                   IntegerUtils.asBytes(this.plateColor),
-                                   ArrayUtils.ensureLength(this.plateText.getBytes("ascii"), 12),
-                                   this.schoolNo,
-                                   RESERVED_FIELD,
-                                   IntegerUtils.asBytes(this.cltKeyIndex),
-                                   this.encryptedRdmB,
-                                   this.encryptedCltChk,
-                                   this.encryptedDvcSn,
-                                   this.encryptedSvrAddr);
+            ArrayUtils.concatenate(
+                this.mfrsId,
+                this.cltId,
+                ArrayUtils.ensureLength(IntegerUtils.toBcd(this.hardwareVer), 2),
+                ArrayUtils.ensureLength(IntegerUtils.toBcd(this.softwareVer), 2),
+                ArrayUtils.ensureLength(IntegerUtils.toBcd(this.protocolVer), 2),
+                ArrayUtils.ensureLength(IntegerUtils.toBcd(this.customVer), 1),
+                RESERVED_FIELD,
+                IntegerUtils.asBytes(this.plateColor),
+                ArrayUtils.ensureLength(this.plateText.getBytes("ascii"), 12),
+                this.schoolNo,
+                RESERVED_FIELD,
+                IntegerUtils.asBytes(this.cltKeyIndex),
+                CryptoUtils.encrypt(ArrayUtils.leftXor(this.randomB, this.cltId), this.cltKey),
+                CryptoUtils.encrypt(ArrayUtils.leftXor(this.randomB, this.randomA), this.cltKey),
+                CryptoUtils.encrypt(ArrayUtils.leftXor(this.deviceSn, this.randomA), this.cltKey),
+                CryptoUtils.encrypt(ArrayUtils.leftXor(this.svrAddress, this.randomA), this.cltKey)
+            );
       } catch (UnsupportedEncodingException uee) {
         Log.e(TAG, "build: Encode message body failed.", uee);
+      } catch (BadPaddingException | IllegalBlockSizeException | InvalidKeyException e) {
+        Log.e(TAG, "build: Encode message body failed.", e);
+        return null;
       }
 
       return new ChallengeResponse(this);

@@ -17,7 +17,6 @@ import ml.that.pigeon.msg.ChallengeResponse;
 import ml.that.pigeon.msg.LoginCommand;
 import ml.that.pigeon.msg.LoginResponse;
 import ml.that.pigeon.msg.Message;
-import ml.that.pigeon.util.ArrayUtils;
 import ml.that.pigeon.util.CryptoUtils;
 
 import static android.content.ContentValues.TAG;
@@ -79,34 +78,21 @@ public class AdvancedAuthentication {
     try {
       byte[] rdmA = CryptoUtils.decrypt(challenge.getEncryptedRdmA(), svrKey);
       Log.d(TAG, "authenticate: rdmA=" + new String(rdmA, "ascii"));
-
       byte[] rdmB = "aaaaaaaaaaaaaaaa".getBytes("ascii");
       Log.d(TAG, "authenticate: rdmB=aaaaaaaaaaaaaaaa");
 
       // TODO: 10/29/2016 replace fake data
-      byte[] encryptedRdmB =
-          CryptoUtils.encrypt(ArrayUtils.leftXor(rdmB, "1234567".getBytes("ascii")), cltKey);
-      byte[] encryptedCltChk = CryptoUtils.encrypt(ArrayUtils.leftXor(rdmA, rdmB), cltKey);
-      byte[] encryptedDvcSn = CryptoUtils.encrypt(ArrayUtils.leftXor(new byte[16], rdmA), cltKey);
-      byte[] encryptedSvrAddr =
-          CryptoUtils.encrypt(ArrayUtils.leftXor("218.90.189.222  ".getBytes("ascii"), rdmA),
-                              cltKey);
-
       // Send the response
-      // TODO: 2016/10/31 move the encryption processes into the challenge response
       ChallengeResponse response =
-          new ChallengeResponse.Builder(cKeyIdx,
-                                        encryptedRdmB,
-                                        encryptedCltChk,
-                                        encryptedDvcSn,
-                                        encryptedSvrAddr)
-              .cltId("1234567".getBytes("ascii")).build();
+          new ChallengeResponse.Builder(cKeyIdx, cltKey, rdmA, rdmB).build();
+      if (response == null) {
+        return false;
+      }
       mConnection.sendMessage(response);
-    } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
-      Log.e(TAG, "authenticate: Encryption failed.", e);
-      return false;
     } catch (UnsupportedEncodingException uue) {
       Log.e(TAG, "authenticate: Encode failed.", uue);
+    } catch (InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
+      Log.e(TAG, "authenticate: Encryption failed.", e);
       return false;
     }
     // Wait up to a certain number of seconds for a login command from the server
