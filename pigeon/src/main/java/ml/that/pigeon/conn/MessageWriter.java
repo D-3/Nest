@@ -7,7 +7,7 @@ import java.io.OutputStream;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import ml.that.pigeon.msg.HeartbeatRequest;
+import ml.that.pigeon.msg.HeartbeatMessage;
 import ml.that.pigeon.msg.Message;
 import ml.that.pigeon.msg.Packet;
 import ml.that.pigeon.util.LogUtils;
@@ -214,7 +214,7 @@ class MessageWriter {
         synchronized (mOutput) {
           // Send heartbeat if no packet has been sent to the server for a given time
           if (System.currentTimeMillis() - mLastActive >= delay * 1000L) {
-            sendMessage(new HeartbeatRequest.Builder().build());
+            sendMessage(new HeartbeatMessage.Builder().build());
           }
         }
 
